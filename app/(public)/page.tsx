@@ -1,41 +1,46 @@
 import Link from "next/link";
-import { listCommunityConfigs } from "@/lib/community/config";
+import { DEFAULT_COMMUNITY_SLUG, listCommunityConfigs } from "@/lib/community/config";
+import { getPublicDistribution } from "@/lib/db/queries/publicStats";
+import { MapExplorer } from "./MapExplorer";
 
-export default function LandingPage() {
+export const dynamic = "force-dynamic";
+
+// Homepage for every visitor, public or member (PRD Journey A: "Visitor
+// opens Lentera... the site shows a world map with aggregate counts").
+// Login/registration are deliberately small corner links, not the page's
+// focal point — the map is.
+export default async function LandingPage() {
   const communities = listCommunityConfigs();
+  const distribution = await getPublicDistribution(DEFAULT_COMMUNITY_SLUG);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-8 px-6 py-12">
-      <div>
-        <h1 className="text-3xl font-semibold">Lentera</h1>
-        <p className="mt-2 text-neutral-500">
-          A community directory for SMA Taruna Nusantara angkatan 19 — see where everyone
-          lives now, and stay in touch.
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <Link
-          href="/map"
-          className="rounded border border-neutral-300 px-4 py-2 text-center font-medium"
-        >
-          See where everyone is
-        </Link>
-        {communities.map((c) => (
-          <Link
-            key={c.slug}
-            href={`/register/${c.slug}`}
-            className="rounded bg-neutral-900 px-4 py-2 text-center text-white"
-          >
-            I have an invitation code
+    <main className="mx-auto max-w-4xl px-6 py-8">
+      <header className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Lentera</h1>
+          <p className="text-sm text-neutral-500">
+            Where SMA Taruna Nusantara angkatan 19 lives now.
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-1 text-sm">
+          <Link href="/login" className="underline">
+            Sign in
           </Link>
-        ))}
-        <Link href="/login" className="rounded border border-neutral-300 px-4 py-2 text-center">
-          Sign in
-        </Link>
-      </div>
+          {communities.map((c) => (
+            <Link key={c.slug} href={`/register/${c.slug}`} className="text-neutral-500 underline">
+              I have an invitation code
+            </Link>
+          ))}
+        </div>
+      </header>
 
-      <Link href="/privacy" className="text-center text-sm text-neutral-400 underline">
+      {distribution.totalMembers === 0 ? (
+        <p className="text-sm text-neutral-400">No approved members yet.</p>
+      ) : (
+        <MapExplorer distribution={distribution} />
+      )}
+
+      <Link href="/privacy" className="mt-8 block text-center text-xs text-neutral-400 underline">
         Privacy policy
       </Link>
     </main>
