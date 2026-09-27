@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MemberStatusControls } from "./MemberStatusControls";
+import { AdminProfileSection } from "./AdminProfileSection";
 
 export default async function AdminMemberDetailPage({
   params,
@@ -43,18 +44,6 @@ export default async function AdminMemberDetailPage({
         <dd>{membership.status}</dd>
         <dt className="text-neutral-500">Role</dt>
         <dd>{membership.role}</dd>
-        {profile?.occupation && (
-          <>
-            <dt className="text-neutral-500">Occupation</dt>
-            <dd>{profile.occupation}</dd>
-          </>
-        )}
-        {profile?.company_or_industry && (
-          <>
-            <dt className="text-neutral-500">Company / industry</dt>
-            <dd>{profile.company_or_industry}</dd>
-          </>
-        )}
         {currentLocation?.locations && (
           <>
             <dt className="text-neutral-500">Location</dt>
@@ -72,6 +61,15 @@ export default async function AdminMemberDetailPage({
           </>
         )}
       </dl>
+
+      <AdminProfileSection
+        membershipId={membership.id}
+        displayName={profile?.display_name ?? ""}
+        occupation={profile?.occupation ?? null}
+        companyOrIndustry={profile?.company_or_industry ?? null}
+        bio={profile?.bio ?? null}
+        education={profile?.education ?? null}
+      />
 
       <div>
         <h2 className="mb-2 text-sm font-semibold text-neutral-500">Audit history</h2>

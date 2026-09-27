@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { DEFAULT_COMMUNITY_SLUG } from "@/lib/community/config";
 import { requireMember } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
-import { OnboardingForm } from "./OnboardingForm";
+import { ProfileForm } from "../ProfileForm";
 
 export default async function OnboardingPage() {
   const membership = await requireMember(DEFAULT_COMMUNITY_SLUG);
@@ -26,7 +26,7 @@ export default async function OnboardingPage() {
           An admin will review your account before it appears to other members.
         </p>
       </div>
-      <OnboardingForm />
+      <ProfileForm mode="create" />
     </div>
   );
 }

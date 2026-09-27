@@ -12,6 +12,16 @@ export interface RosterImportRowResult {
   detail?: string;
   invitationId?: string;
   rawCode?: string;
+  // Only set for unresolved_location rows, so the admin can retry just this
+  // one row with a manually-picked location instead of re-uploading the
+  // whole file (see /api/admin/import/retry-row).
+  rawRow?: {
+    name: string;
+    email?: string;
+    phone?: string;
+    occupation?: string;
+    company?: string;
+  };
 }
 
 export interface RosterImportSummary {
@@ -85,6 +95,13 @@ export async function importRosterCsv(
         detail: `could not match country "${rosterRow.country}"${
           rosterRow.province ? ` / province "${rosterRow.province}"` : ""
         }${rosterRow.city ? ` / city "${rosterRow.city}"` : ""}`,
+        rawRow: {
+          name: rosterRow.name,
+          email: rosterRow.email || undefined,
+          phone: rosterRow.phone || undefined,
+          occupation: rosterRow.occupation || undefined,
+          company: rosterRow.company || undefined,
+        },
       });
       continue;
     }

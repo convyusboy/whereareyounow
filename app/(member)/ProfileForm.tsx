@@ -2,28 +2,86 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { FieldVisibility } from "@/lib/validation/onboarding";
 
 interface Option {
   code: string;
   name: string;
 }
 
-export function OnboardingForm() {
+export type { FieldVisibility };
+
+export interface ProfileFormInitialValues {
+  displayName: string;
+  occupation: string;
+  companyOrIndustry: string;
+  bio: string;
+  education: string;
+  visibility: Partial<Record<"occupation" | "companyOrIndustry" | "bio" | "education", FieldVisibility>>;
+  countryCode: string;
+  provinceCode: string;
+  cityCode: string;
+  effectiveFrom: string;
+}
+
+const VISIBILITY_LABELS: Record<FieldVisibility, string> = {
+  members: "Visible to members",
+  admin_only: "Admins only",
+  hidden: "Hidden",
+};
+
+function VisibilitySelect({
+  value,
+  onChange,
+}: {
+  value: FieldVisibility;
+  onChange: (v: FieldVisibility) => void;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value as FieldVisibility)}
+      className="rounded border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs text-neutral-500"
+      aria-label="Visibility"
+    >
+      {(Object.keys(VISIBILITY_LABELS) as FieldVisibility[]).map((v) => (
+        <option key={v} value={v}>
+          {VISIBILITY_LABELS[v]}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+export function ProfileForm({
+  mode,
+  initialValues,
+}: {
+  mode: "create" | "edit";
+  initialValues?: ProfileFormInitialValues;
+}) {
   const router = useRouter();
 
-  const [displayName, setDisplayName] = useState("");
-  const [occupation, setOccupation] = useState("");
-  const [companyOrIndustry, setCompanyOrIndustry] = useState("");
-  const [bio, setBio] = useState("");
-  const [education, setEducation] = useState("");
-  const [effectiveFrom, setEffectiveFrom] = useState("");
+  const [displayName, setDisplayName] = useState(initialValues?.displayName ?? "");
+  const [occupation, setOccupation] = useState(initialValues?.occupation ?? "");
+  const [companyOrIndustry, setCompanyOrIndustry] = useState(initialValues?.companyOrIndustry ?? "");
+  const [bio, setBio] = useState(initialValues?.bio ?? "");
+  const [education, setEducation] = useState(initialValues?.education ?? "");
+  const [effectiveFrom, setEffectiveFrom] = useState(initialValues?.effectiveFrom ?? "");
+
+  const [visibility, setVisibility] = useState<ProfileFormInitialValues["visibility"]>(
+    initialValues?.visibility ?? {}
+  );
+  function setFieldVisibility(field: keyof ProfileFormInitialValues["visibility"], v: FieldVisibility) {
+    setVisibility((prev) => ({ ...prev, [field]: v }));
+  }
 
   const [countries, setCountries] = useState<Option[]>([]);
-  const [countryCode, setCountryCode] = useState("");
+  const [countryCode, setCountryCode] = useState(initialValues?.countryCode ?? "");
   const [provinces, setProvinces] = useState<Option[]>([]);
-  const [provinceCode, setProvinceCode] = useState("");
+  const [provinceCode, setProvinceCode] = useState(initialValues?.provinceCode ?? "");
   const [cities, setCities] = useState<Option[]>([]);
-  const [cityCode, setCityCode] = useState("");
+  const [cityCode, setCityCode] = useState(initialValues?.cityCode ?? "");
   const [freeCity, setFreeCity] = useState("");
 
   const [error, setError] = useState<string | null>(null);
@@ -81,10 +139,11 @@ export function OnboardingForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           displayName,
-          occupation: occupation || undefined,
+          occupation,
           companyOrIndustry: companyOrIndustry || undefined,
           bio: bio || undefined,
           education: education || undefined,
+          visibility,
         }),
       });
       if (!profileRes.ok) {
@@ -108,6 +167,7 @@ export function OnboardingForm() {
       }
 
       router.push("/profile");
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -213,42 +273,70 @@ export function OnboardingForm() {
         </label>
       )}
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Occupation (optional)</span>
-        <input
-          value={occupation}
-          onChange={(e) => setOccupation(e.target.value)}
-          className="rounded border border-neutral-300 px-3 py-2"
+      <div className="flex items-end gap-2">
+        <label className="flex flex-1 flex-col gap-1">
+          <span className="text-sm font-medium">Occupation</span>
+          <input
+            required
+            value={occupation}
+            onChange={(e) => setOccupation(e.target.value)}
+            className="rounded border border-neutral-300 px-3 py-2"
+          />
+        </label>
+        <VisibilitySelect
+          value={visibility.occupation ?? "members"}
+          onChange={(v) => setFieldVisibility("occupation", v)}
         />
-      </label>
+      </div>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Company / industry (optional)</span>
-        <input
-          value={companyOrIndustry}
-          onChange={(e) => setCompanyOrIndustry(e.target.value)}
-          className="rounded border border-neutral-300 px-3 py-2"
+      <div className="flex items-end gap-2">
+        <label className="flex flex-1 flex-col gap-1">
+          <span className="text-sm font-medium">Company / industry (optional)</span>
+          <input
+            value={companyOrIndustry}
+            onChange={(e) => setCompanyOrIndustry(e.target.value)}
+            className="rounded border border-neutral-300 px-3 py-2"
+          />
+        </label>
+        <VisibilitySelect
+          value={visibility.companyOrIndustry ?? "members"}
+          onChange={(v) => setFieldVisibility("companyOrIndustry", v)}
         />
-      </label>
+      </div>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Education / other affiliations (optional)</span>
-        <input
-          value={education}
-          onChange={(e) => setEducation(e.target.value)}
-          className="rounded border border-neutral-300 px-3 py-2"
+      <div className="flex items-end gap-2">
+        <label className="flex flex-1 flex-col gap-1">
+          <span className="text-sm font-medium">Education / other affiliations (optional)</span>
+          <input
+            value={education}
+            onChange={(e) => setEducation(e.target.value)}
+            className="rounded border border-neutral-300 px-3 py-2"
+          />
+        </label>
+        <VisibilitySelect
+          value={visibility.education ?? "members"}
+          onChange={(v) => setFieldVisibility("education", v)}
         />
-      </label>
+      </div>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Short bio (optional)</span>
-        <textarea
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          rows={3}
-          className="rounded border border-neutral-300 px-3 py-2"
-        />
-      </label>
+      <div className="flex items-end gap-2">
+        <label className="flex flex-1 flex-col gap-1">
+          <span className="text-sm font-medium">Short bio (optional)</span>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            rows={3}
+            className="rounded border border-neutral-300 px-3 py-2"
+          />
+        </label>
+        <VisibilitySelect value={visibility.bio ?? "members"} onChange={(v) => setFieldVisibility("bio", v)} />
+      </div>
+
+      <p className="text-xs text-neutral-400">
+        &quot;Visible to members&quot; means other approved Lentera members can see this field.
+        Admins can always see everything, for review purposes. The public map never shows any of
+        this — only aggregate counts.
+      </p>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -257,7 +345,7 @@ export function OnboardingForm() {
         disabled={submitting}
         className="rounded bg-neutral-900 px-4 py-2 text-white disabled:opacity-50"
       >
-        {submitting ? "Saving…" : "Submit for review"}
+        {submitting ? "Saving…" : mode === "create" ? "Submit for review" : "Save changes"}
       </button>
     </form>
   );

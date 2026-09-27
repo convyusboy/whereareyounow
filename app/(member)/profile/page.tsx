@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DEFAULT_COMMUNITY_SLUG } from "@/lib/community/config";
 import { requireMember } from "@/lib/auth/roles";
@@ -41,7 +42,12 @@ export default async function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">My profile</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">My profile</h1>
+        <Link href="/profile/edit" className="text-sm underline">
+          Edit
+        </Link>
+      </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
         <dt className="text-neutral-500">Name</dt>
         <dd>{profile.display_name}</dd>

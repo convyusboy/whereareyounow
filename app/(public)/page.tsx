@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { listCommunityConfigs } from "@/lib/community/config";
 
-// Phase 1 landing placeholder — the public aggregate map (world/country/
-// Indonesia/province/city counts) is Phase 2 scope. This page's only job
-// right now is to route people into the invite-redemption / sign-in flow.
 export default function LandingPage() {
   const communities = listCommunityConfigs();
 
@@ -12,13 +9,18 @@ export default function LandingPage() {
       <div>
         <h1 className="text-3xl font-semibold">Lentera</h1>
         <p className="mt-2 text-neutral-500">
-          A community directory for SMA Taruna Nusantara angkatan 19. The public map showing
-          where everyone lives is coming soon — for now, members can register and update their
-          profile.
+          A community directory for SMA Taruna Nusantara angkatan 19 — see where everyone
+          lives now, and stay in touch.
         </p>
       </div>
 
       <div className="flex flex-col gap-3">
+        <Link
+          href="/map"
+          className="rounded border border-neutral-300 px-4 py-2 text-center font-medium"
+        >
+          See where everyone is
+        </Link>
         {communities.map((c) => (
           <Link
             key={c.slug}

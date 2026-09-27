@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RosterImportRowResult } from "@/lib/csv/rosterImport";
+import { RetryRowForm } from "./RetryRowForm";
 
 export function ImportForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -64,12 +65,22 @@ export function ImportForm() {
             </tr>
           </thead>
           <tbody>
-            {results.map((r) => (
-              <tr key={r.row} className="border-b border-neutral-100">
+            {results.map((r, i) => (
+              <tr key={r.row} className="border-b border-neutral-100 align-top">
                 <td className="py-2">{r.row}</td>
                 <td className="py-2">{r.name}</td>
                 <td className="py-2">{r.status}</td>
-                <td className="py-2 font-mono text-xs">{r.rawCode ?? r.detail ?? ""}</td>
+                <td className="py-2 font-mono text-xs">
+                  {r.rawCode ?? r.detail ?? ""}
+                  {r.status === "unresolved_location" && r.rawRow && (
+                    <RetryRowForm
+                      result={r}
+                      onResolved={(updated) =>
+                        setResults((prev) => prev!.map((row, idx) => (idx === i ? updated : row)))
+                      }
+                    />
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

@@ -52,6 +52,46 @@ export async function updateMembershipStatus(
   return after;
 }
 
+// Member-initiated deletion (PRD section 16 item 9): immediately hides the
+// member from every public/authenticated view (everywhere already filters
+// on status === "approved") and anonymizes personal fields, while keeping
+// the membership row itself and its audit trail intact.
+export async function requestAccountDeletion(membershipId: string, userId: string) {
+  const supabase = createAdminClient();
+  const now = new Date().toISOString();
+
+  const { data: after, error } = await supabase
+    .from("community_memberships")
+    .update({ status: "deleted", deleted_at: now })
+    .eq("id", membershipId)
+    .select("*")
+    .single();
+  if (error) throw error;
+
+  await supabase
+    .from("member_profiles")
+    .update({
+      display_name: "Deleted member",
+      occupation: null,
+      company_or_industry: null,
+      bio: null,
+      education: null,
+      photo_url: null,
+      visibility_config: {},
+    })
+    .eq("membership_id", membershipId);
+
+  await recordAuditEvent({
+    actorUserId: userId,
+    communityId: after.community_id,
+    entityType: "membership",
+    entityId: membershipId,
+    action: "self_deleted_and_anonymized",
+  });
+
+  return after;
+}
+
 interface AdminCreateMemberInput {
   communityId: string;
   email: string;

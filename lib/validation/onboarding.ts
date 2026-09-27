@@ -1,10 +1,12 @@
 import { z } from "zod";
 
 export const visibilitySchema = z.enum(["members", "admin_only", "hidden"]);
+export type FieldVisibility = z.infer<typeof visibilitySchema>;
 
 export const onboardingProfileSchema = z.object({
   displayName: z.string().trim().min(1).max(120),
-  occupation: z.string().trim().max(160).optional(),
+  // Required per PRD section 16 item 6 (only bio/education/company are optional).
+  occupation: z.string().trim().min(1).max(160),
   companyOrIndustry: z.string().trim().max(160).optional(),
   bio: z.string().trim().max(1000).optional(),
   education: z.string().trim().max(300).optional(),
