@@ -2,7 +2,7 @@
 
 import "leaflet/dist/leaflet.css";
 import type { LatLngBoundsExpression } from "leaflet";
-import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
+import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip } from "react-leaflet";
 
 export interface MapPin {
   key: string;
@@ -52,6 +52,9 @@ export function LeafletMap({ pins, onPinClick }: { pins: MapPin[]; onPinClick: (
             fillOpacity: pin.clickable ? 0.5 : 0.3,
           }}
         >
+          <Tooltip direction="top" offset={[0, -4]}>
+            {pin.label}: {pin.count} member{pin.count === 1 ? "" : "s"}
+          </Tooltip>
           <Popup>
             <strong>{pin.label}</strong>
             <br />
