@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PublicDistribution } from "@/lib/db/queries/publicStats";
 import type { MapPin } from "./LeafletMap";
 
@@ -33,6 +33,13 @@ interface Row {
 // at once, per spec.
 export function MapExplorer({ distribution }: { distribution: PublicDistribution }) {
   const [view, setView] = useState<ViewState>({ level: "world" });
+
+  // The map's own container can be taller than the viewport (esp. at world
+  // level); without this, drilling down after scrolling down left the newly
+  // relevant map — and its Center button — scrolled out of view above.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [view]);
 
   const rows: Row[] = useMemo(() => {
     if (view.level === "world") {
@@ -149,6 +156,7 @@ export function MapExplorer({ distribution }: { distribution: PublicDistribution
         key={view.level === "world" ? "world" : view.code}
         pins={pins}
         onPinClick={handlePinClick}
+        isWorldLevel={view.level === "world"}
       />
 
       {rows.length === 0 && (

@@ -57,7 +57,15 @@ function radiusFor(count: number): number {
 // Pure presentational Leaflet renderer — all drill-down state lives in
 // MapExplorer. Dynamic-imported with ssr:false there, since Leaflet touches
 // `window` at module load and can't be part of the server render.
-export function LeafletMap({ pins, onPinClick }: { pins: MapPin[]; onPinClick: (key: string) => void }) {
+export function LeafletMap({
+  pins,
+  onPinClick,
+  isWorldLevel,
+}: {
+  pins: MapPin[];
+  onPinClick: (key: string) => void;
+  isWorldLevel: boolean;
+}) {
   const [width, setWidth] = useState<number | null>(null);
 
   useEffect(() => {
@@ -82,14 +90,16 @@ export function LeafletMap({ pins, onPinClick }: { pins: MapPin[]; onPinClick: (
   }
 
   // Cap zoom-out at the level where a full 360° world is exactly as wide as
-  // the viewport — no narrower (which would otherwise need repeated world
-  // copies or empty side margins to fill the width). The world is square in
-  // tile space, so at that zoom its height equals its width too; making the
-  // container that tall (rather than a fixed viewport height) means a wide,
-  // short viewport just scrolls vertically to see the rest, instead of
-  // squeezing the map or leaving empty bars.
+  // the viewport — applies at every drill level, so no view can ever tile
+  // into repeated world copies.
   const minZoom = Math.max(1, Math.ceil(Math.log2(width / TILE_SIZE)));
-  const squareHeight = width;
+  // The square (world-width == world-height) container only makes sense at
+  // world level, to avoid empty side margins at max zoom-out. Forcing that
+  // same huge height on a drilled-down (country/province) view served no
+  // purpose — it's already zoomed into a small area — and left the map (and
+  // the Center button pinned near its top) scrolled out of view if the page
+  // had been scrolled down before drilling in.
+  const height = isWorldLevel ? width : "calc(100dvh - 180px)";
 
   return (
     <MapContainer
@@ -102,7 +112,7 @@ export function LeafletMap({ pins, onPinClick }: { pins: MapPin[]; onPinClick: (
         [89, 180],
       ]}
       maxBoundsViscosity={1.0}
-      style={{ height: `${squareHeight}px`, width: "100%" }}
+      style={{ height: typeof height === "number" ? `${height}px` : height, width: "100%" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
