@@ -151,24 +151,11 @@ export function MapExplorer({ distribution }: { distribution: PublicDistribution
         onPinClick={handlePinClick}
       />
 
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-4">
-        {rows.length === 0 && (
-          <p className="text-sm text-neutral-400">
-            No further breakdown is available for this location yet.
-          </p>
-        )}
-        {rows.map((row) => (
-          <button
-            key={row.key}
-            onClick={() => row.clickable && handlePinClick(row.key)}
-            disabled={!row.clickable}
-            className="flex items-baseline justify-between rounded border border-neutral-200 p-3 text-left text-sm enabled:hover:bg-neutral-50 disabled:text-neutral-500"
-          >
-            <span className={row.clickable ? "font-medium" : ""}>{row.label}</span>
-            <span className="text-neutral-500">{row.count}</span>
-          </button>
-        ))}
-      </div>
+      {rows.length === 0 && (
+        <p className="px-4 text-sm text-neutral-400">
+          No further breakdown is available for this location yet.
+        </p>
+      )}
     </div>
   );
 }
