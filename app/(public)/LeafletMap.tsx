@@ -1,8 +1,34 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import type { LatLngBoundsExpression } from "leaflet";
-import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip } from "react-leaflet";
+import type { FitBoundsOptions, LatLngBoundsExpression } from "leaflet";
+import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
+
+const FIT_BOUNDS_OPTIONS: FitBoundsOptions = { padding: [40, 40], maxZoom: 11 };
+
+// Leaflet's own zoom control sits top-left; this reuses its control chrome
+// (leaflet-bar / leaflet-control) so "Center" looks native, just top-right.
+function ResetViewControl({ bounds }: { bounds: LatLngBoundsExpression }) {
+  const map = useMap();
+  return (
+    <div className="leaflet-top leaflet-right">
+      <div className="leaflet-control leaflet-bar">
+        <a
+          href="#"
+          role="button"
+          title="Reset to fit view"
+          onClick={(e) => {
+            e.preventDefault();
+            map.fitBounds(bounds, FIT_BOUNDS_OPTIONS);
+          }}
+          className="flex !w-auto items-center px-2 text-xs font-medium leading-[26px] no-underline"
+        >
+          Center
+        </a>
+      </div>
+    </div>
+  );
+}
 
 export interface MapPin {
   key: string;
@@ -32,7 +58,7 @@ export function LeafletMap({ pins, onPinClick }: { pins: MapPin[]; onPinClick: (
   return (
     <MapContainer
       bounds={bounds}
-      boundsOptions={{ padding: [40, 40], maxZoom: 11 }}
+      boundsOptions={FIT_BOUNDS_OPTIONS}
       scrollWheelZoom={true}
       style={{ height: "calc(100dvh - 180px)", width: "100%" }}
     >
@@ -40,6 +66,7 @@ export function LeafletMap({ pins, onPinClick }: { pins: MapPin[]; onPinClick: (
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <ResetViewControl bounds={bounds} />
       {pins.map((pin) => (
         <CircleMarker
           key={pin.key}
