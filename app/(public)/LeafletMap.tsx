@@ -60,11 +60,18 @@ export function LeafletMap({ pins, onPinClick }: { pins: MapPin[]; onPinClick: (
       bounds={bounds}
       boundsOptions={FIT_BOUNDS_OPTIONS}
       scrollWheelZoom={true}
+      minZoom={2}
+      maxBounds={[
+        [-89, -180],
+        [89, 180],
+      ]}
+      maxBoundsViscosity={1.0}
       style={{ height: "calc(100dvh - 180px)", width: "100%" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        noWrap={true}
       />
       <ResetViewControl bounds={bounds} />
       {pins.map((pin) => (
