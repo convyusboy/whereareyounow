@@ -20,27 +20,24 @@ function InvalidateOnResize({ width, bounds }: { width: number; bounds: LatLngBo
   return null;
 }
 
-// Leaflet's own zoom control sits top-left; this reuses its control chrome
-// (leaflet-bar / leaflet-control) so "Center" looks native, just top-right.
-function ResetViewControl({ bounds }: { bounds: LatLngBoundsExpression }) {
+// A plain, independently-positioned button rather than reusing Leaflet's
+// internal `.leaflet-top`/`.leaflet-control` DOM — that DOM is owned and
+// actively managed by Leaflet's own control-container lifecycle, and
+// piggybacking a React-rendered div onto it intermittently lost the button
+// (wrong stacking context, or Leaflet re-arranging that container's real
+// children around it). This sits in ordinary CSS position:absolute over the
+// map instead, fully independent of Leaflet's internals.
+function ResetViewButton({ bounds }: { bounds: LatLngBoundsExpression }) {
   const map = useMap();
   return (
-    <div className="leaflet-top leaflet-right">
-      <div className="leaflet-control leaflet-bar">
-        <a
-          href="#"
-          role="button"
-          title="Reset to fit view"
-          onClick={(e) => {
-            e.preventDefault();
-            map.fitBounds(bounds, FIT_BOUNDS_OPTIONS);
-          }}
-          className="flex !w-auto items-center px-2 text-xs font-medium leading-[26px] no-underline"
-        >
-          Center
-        </a>
-      </div>
-    </div>
+    <button
+      type="button"
+      title="Reset to fit view"
+      onClick={() => map.fitBounds(bounds, FIT_BOUNDS_OPTIONS)}
+      className="absolute right-2.5 top-2.5 z-[1000] rounded border border-neutral-300 bg-white px-2.5 py-1.5 text-xs font-medium shadow-md hover:bg-neutral-50"
+    >
+      Center
+    </button>
   );
 }
 
@@ -112,7 +109,7 @@ export function LeafletMap({ pins, onPinClick }: { pins: MapPin[]; onPinClick: (
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         noWrap={true}
       />
-      <ResetViewControl bounds={bounds} />
+      <ResetViewButton bounds={bounds} />
       <InvalidateOnResize width={width} bounds={bounds} />
       {pins.map((pin) => (
         <CircleMarker
