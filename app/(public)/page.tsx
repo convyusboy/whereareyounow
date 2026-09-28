@@ -8,17 +8,17 @@ export const dynamic = "force-dynamic";
 // Homepage for every visitor, public or member (PRD Journey A: "Visitor
 // opens Lentera... the site shows a world map with aggregate counts").
 // Login/registration are deliberately small corner links, not the page's
-// focal point — the map is.
+// focal point — the map fills the viewport instead.
 export default async function LandingPage() {
   const communities = listCommunityConfigs();
   const distribution = await getPublicDistribution(DEFAULT_COMMUNITY_SLUG);
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-8">
-      <header className="mb-6 flex items-start justify-between">
+    <div className="flex flex-col">
+      <header className="flex items-start justify-between px-4 py-3">
         <div>
-          <h1 className="text-2xl font-semibold">Lentera</h1>
-          <p className="text-sm text-neutral-500">
+          <h1 className="text-xl font-semibold">Lentera</h1>
+          <p className="text-xs text-neutral-500">
             Where SMA Taruna Nusantara angkatan 19 lives now.
           </p>
         </div>
@@ -35,14 +35,14 @@ export default async function LandingPage() {
       </header>
 
       {distribution.totalMembers === 0 ? (
-        <p className="text-sm text-neutral-400">No approved members yet.</p>
+        <p className="px-4 text-sm text-neutral-400">No approved members yet.</p>
       ) : (
         <MapExplorer distribution={distribution} />
       )}
 
-      <Link href="/privacy" className="mt-8 block text-center text-xs text-neutral-400 underline">
+      <Link href="/privacy" className="block px-4 py-6 text-center text-xs text-neutral-400 underline">
         Privacy policy
       </Link>
-    </main>
+    </div>
   );
 }

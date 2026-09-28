@@ -111,8 +111,8 @@ export function MapExplorer({ distribution }: { distribution: PublicDistribution
         : (distribution.indonesiaProvinces.find((p) => p.code === view.code)?.count ?? 0);
 
   return (
-    <div className="flex flex-col gap-4">
-      <nav className="flex flex-wrap items-center gap-1 text-sm text-neutral-500">
+    <div className="flex flex-col gap-3">
+      <nav className="flex flex-wrap items-center gap-1 px-4 text-sm text-neutral-500">
         <button onClick={() => setView({ level: "world" })} className="underline hover:text-neutral-900">
           World
         </button>
@@ -140,7 +140,7 @@ export function MapExplorer({ distribution }: { distribution: PublicDistribution
         )}
       </nav>
 
-      <p className="text-sm text-neutral-500">
+      <p className="px-4 text-sm text-neutral-500">
         {currentTotal} member{currentTotal === 1 ? "" : "s"}
         {view.level !== "world" && ` (${Math.round((currentTotal / distribution.totalMembers) * 100)}% of the community)`}
       </p>
@@ -151,7 +151,7 @@ export function MapExplorer({ distribution }: { distribution: PublicDistribution
         onPinClick={handlePinClick}
       />
 
-      <div className="flex flex-col gap-2">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-4">
         {rows.length === 0 && (
           <p className="text-sm text-neutral-400">
             No further breakdown is available for this location yet.

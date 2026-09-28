@@ -34,7 +34,7 @@ export function LeafletMap({ pins, onPinClick }: { pins: MapPin[]; onPinClick: (
       bounds={bounds}
       boundsOptions={{ padding: [40, 40], maxZoom: 11 }}
       scrollWheelZoom={true}
-      style={{ height: "500px", width: "100%", borderRadius: "0.5rem" }}
+      style={{ height: "calc(100dvh - 180px)", width: "100%" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
