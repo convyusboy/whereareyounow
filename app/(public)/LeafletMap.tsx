@@ -50,8 +50,13 @@ export interface MapPin {
   clickable: boolean;
 }
 
+// Capped + gentler-than-linear scaling: an uncapped sqrt scale still let a
+// high-count location (e.g. Indonesia, ~5x any other country's radius) grow
+// large enough to swallow a geographically nearby small marker's clickable
+// area, so clicks meant for the small one landed on the big one underneath
+// instead — not a click-handling bug, a hit-area overlap problem.
 function radiusFor(count: number): number {
-  return Math.max(7, Math.sqrt(count) * 6);
+  return Math.min(22, Math.max(8, Math.sqrt(count) * 3));
 }
 
 // Pure presentational Leaflet renderer — all drill-down state lives in
