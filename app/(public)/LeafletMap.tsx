@@ -82,13 +82,19 @@ export function LeafletMap({
     return () => window.removeEventListener("resize", measure);
   }, []);
 
+  // Neutral world extent, not any specific country/region — MapExplorer
+  // should always supply at least a self-pin for whatever's being viewed
+  // (see its hasBreakdown handling), but if pins is ever unexpectedly empty,
+  // silently defaulting to one particular place's coordinates is exactly
+  // the bug class that caused every non-Indonesia country to re-center on
+  // Indonesia instead.
   const bounds: LatLngBoundsExpression =
     pins.length > 0
       ? pins.map((pin): [number, number] => [pin.lat, pin.lng])
       : [
-          [-11, 95],
-          [6, 141],
-        ]; // fallback: roughly Indonesia's extent
+          [-60, -180],
+          [70, 180],
+        ];
 
   if (width === null) {
     return <div style={{ height: "60vh", width: "100%" }} className="animate-pulse bg-neutral-100" />;

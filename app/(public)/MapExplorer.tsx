@@ -41,32 +41,63 @@ export function MapExplorer({ distribution }: { distribution: PublicDistribution
     window.scrollTo({ top: 0 });
   }, [view]);
 
-  const rows: Row[] = useMemo(() => {
+  // hasBreakdown is tracked separately from rows.length: a non-Indonesia
+  // country still needs a self-pin (below) so the map centers on it rather
+  // than falling back to LeafletMap's default bounds, but that's not the
+  // same thing as this location actually having child regions to show.
+  const { rows, hasBreakdown } = useMemo((): { rows: Row[]; hasBreakdown: boolean } => {
     if (view.level === "world") {
-      return distribution.countries.map((c) => ({
-        key: c.code,
-        label: c.name,
-        count: c.count,
-        lat: c.lat,
-        lng: c.lng,
-        clickable: true,
-      }));
+      return {
+        hasBreakdown: true,
+        rows: distribution.countries.map((c) => ({
+          key: c.code,
+          label: c.name,
+          count: c.count,
+          lat: c.lat,
+          lng: c.lng,
+          clickable: true,
+        })),
+      };
     }
 
     if (view.level === "country") {
-      if (view.code !== "ID") return [];
-      return distribution.indonesiaProvinces.map((p) => ({
-        key: p.code,
-        label: p.name,
-        count: p.count,
-        lat: p.lat,
-        lng: p.lng,
-        clickable: true,
-      }));
+      if (view.code !== "ID") {
+        // No sub-region data seeded for this country yet — show its own
+        // point rather than an empty pin list, which previously fell back
+        // to LeafletMap's hardcoded default bounds (roughly Indonesia's
+        // location), making every non-Indonesia country's drill-down
+        // silently re-center on Indonesia instead of that country.
+        const country = distribution.countries.find((c) => c.code === view.code);
+        if (!country) return { rows: [], hasBreakdown: false };
+        return {
+          hasBreakdown: false,
+          rows: [
+            {
+              key: country.code,
+              label: country.name,
+              count: country.count,
+              lat: country.lat,
+              lng: country.lng,
+              clickable: false,
+            },
+          ],
+        };
+      }
+      return {
+        hasBreakdown: true,
+        rows: distribution.indonesiaProvinces.map((p) => ({
+          key: p.code,
+          label: p.name,
+          count: p.count,
+          lat: p.lat,
+          lng: p.lng,
+          clickable: true,
+        })),
+      };
     }
 
     const province = distribution.indonesiaProvinces.find((p) => p.code === view.code);
-    if (!province) return [];
+    if (!province) return { rows: [], hasBreakdown: false };
     const cityRows: Row[] = province.cities.map((c) => ({
       key: c.code,
       label: c.name,
@@ -85,7 +116,7 @@ export function MapExplorer({ distribution }: { distribution: PublicDistribution
         clickable: false,
       });
     }
-    return cityRows;
+    return { rows: cityRows, hasBreakdown: true };
   }, [view, distribution]);
 
   const pins: MapPin[] = rows
@@ -159,7 +190,7 @@ export function MapExplorer({ distribution }: { distribution: PublicDistribution
         isWorldLevel={view.level === "world"}
       />
 
-      {rows.length === 0 && (
+      {!hasBreakdown && (
         <p className="px-4 text-sm text-neutral-400">
           No further breakdown is available for this location yet.
         </p>
